@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "build:ui": "rm -rf dist && cd ../../osa2/testi && npm run build && cp -r dist ../../osa3/notes-backend",
+    "deploy:full": "npm run build:ui && git add -A && git commit -m \"uibuild\" && git push",
     "dev": "node --watch index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
