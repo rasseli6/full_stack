@@ -10,7 +10,7 @@ const errorHandler = (error, request, response, next) => {
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' })
   } else if (error.name === 'ValidationError') {
-    return response.status(400).json({ error: error.message})
+    return response.status(400).json({ error: error.message })
   }
   next(error)
 }
@@ -27,8 +27,8 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :b
 
 
 app.get('/api/persons', (request, response, next) => {
-    Person.find({})
-      .then(persons => {
+  Person.find({})
+    .then(persons => {
       response.json(persons)
     }).catch(error => next(error))
 })
@@ -42,14 +42,12 @@ app.get('/info', (request, response, next) => {
     response.send(`
       <p>Phonebook has info for ${count} people</p>
       <p>${date}</p>`)
-  }).catch(error => next(error))   
-})
+  }).catch(error => next(error))})
 
 
 app.get('/api/persons/:id', (request, response, next) => {
   Person.findById(request.params.id).then(person => {
-    if (person) {
-    response.json(person)
+    if (person) {response.json(person)
     } else {
       response.status(404).end()
     }
@@ -57,14 +55,9 @@ app.get('/api/persons/:id', (request, response, next) => {
 })
 
 
-app.delete('/api/persons/:id', (request, response, next)=>{
-    Person.findByIdAndDelete(request.params.id)
-      .then(result => {
-        if (result) {
-          response.status(204).end()
-        } else {
-          response.status(404).end()
-        }
+app.delete('/api/persons/:id', (request, response, next) => {
+  Person.findByIdAndDelete(request.params.id)
+    .then(result => {if (result) {response.status(204).end()} else {response.status(404).end()}
     }).catch(error => next(error))
 })
 
@@ -91,13 +84,12 @@ app.post('/api/persons', (request, response, next) => {
 app.put('/api/persons/:id', (request, response, next) => {
   const { name, number } = request.body
 
-  Person.findById(request.params.id).then(person=> {
+  Person.findById(request.params.id).then( person => {
     if (!person){
       return response.status(404).end()
     }
     person.name = name
     person.number = number
-    
     return person.save().then((updatedPerson) => {
       response.json(updatedPerson)
     })
@@ -114,5 +106,5 @@ app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`)
+  console.log(`Server running on port ${PORT}`)
 })
