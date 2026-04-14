@@ -3,7 +3,7 @@ const assert = require('node:assert')
 
 const blogs = []
 
-const { dummy, totalLikes, favoriteBlog } = require('../utils/list_helper')
+const { dummy, totalLikes, favoriteBlog, mostBlogs, mostLikes } = require('../utils/list_helper')
 
 const manyblogs = [
     {
@@ -15,6 +15,7 @@ const manyblogs = [
         "__v": 0
     },
     {
+
         "_id": "69dd1cc641cb7a944eb080cd",
         "title": "Ihka toinen kokeilu",
         "author": "Rasmus",
@@ -37,6 +38,8 @@ const listWithOneBlog = [
     }
   ]
 
+  const allBlogs = listWithOneBlog.concat(manyblogs)
+  
 
 
 test('dummy palauttaa 1', () => {
@@ -75,5 +78,49 @@ describe('favoriteBlog', () => {
   test('when list has only one blog equals the likes of that', () => {
     const result = favoriteBlog(listWithOneBlog)
     assert.deepStrictEqual(result, listWithOneBlog[0])
+  })
+})
+
+
+describe('mostBlogs', () => {
+  test('when list is empty returns null', () => {
+    const result = mostBlogs(zeroblog)
+    assert.deepStrictEqual(result, null)
+  })
+  test('when list has one blog returns that author and count 1', () => {
+    const result = mostBlogs(listWithOneBlog)
+    assert.deepStrictEqual(result, {
+      author: 'Edsger W. Dijkstra',
+      blogs: 1
+    })
+  })
+  test('when list has many blogs returns author with most blogs', () => {
+    const result = mostBlogs(allBlogs)
+    assert.deepStrictEqual(result, {
+      author: 'Rasmus',
+      blogs: 2
+    })
+  })
+})
+
+
+describe('mostLikes', () => {
+  test('when list is empty returns null', () => {
+    const result = mostLikes(zeroblog)
+    assert.deepStrictEqual(result, null)
+  })
+  test('when list has one blog returns that author and 5 likes', () => {
+    const result = mostLikes(listWithOneBlog)
+    assert.deepStrictEqual(result, {
+      author: 'Edsger W. Dijkstra',
+      likes: 5
+    })
+  })
+  test('when list has many blogs returns author with most likes total', () => {
+    const result = mostLikes(allBlogs)
+    assert.deepStrictEqual(result, {
+      author: 'Rasmus',
+      likes: 550
+    })
   })
 })
