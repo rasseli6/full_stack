@@ -27,6 +27,7 @@ const initialBlogs = [{
       likes: 5
     }
 ]
+
 beforeEach(async () => {
     await Blog.deleteMany({})
     for (const blog of initialBlogs) {
@@ -46,8 +47,56 @@ test('as many blogs are returned as needed', async () => {
 
 test('_id is id', async() => {
     const response = await api.get('/api/blogs')
+    
     assert.notStrictEqual(response.body[0].id, undefined, 'Blog has not a id field')
 })
+
+test('new blog posted', async() => {
+    const newBlog = {"title": "Ihka ainoa kokeilu",
+        "author": "Rasmus",
+        "url": "http://example.com",
+        "likes": 38}
+    
+    await api.post('/api/blogs').send(newBlog).expect(201).expect('Content-Type', /application\/json/)
+
+    const response = await api.get('/api/blogs')
+
+    const contents = response.body.map(r => r.title)
+    assert.strictEqual(response.body.length, initialBlogs.length + 1)
+    assert(contents.includes(newBlog.title))
+})
+
+test('likes missing, assume its 0', async () => {
+    const newestBlog = {
+        title: 'Blog Without love',
+        author: 'Rasse',
+        url: 'http://example.com/no-love'
+    }
+    const postResponse = await api.post('/api/blogs').send(newestBlog).expect(201).expect('Content-Type', /application\/json/)
+    assert.strictEqual(postResponse.body.likes, 0)
+})
+test('url not added', async () => {
+    const newBlog = {
+        title: "Without url",
+        author: "Rasse",
+        likes: 1
+    }
+    await api.post('/api/blogs').send(newBlog).expect(400)
+    const urlresponse = await api.get('/api/blogs')
+    assert.strictEqual(urlresponse.body.length, initialBlogs.length)
+})
+
+test('blog wihtout title', async () => {
+    const newBlog = {
+        url: "goggeli.com",
+        author: "Rasse",
+        likes: 3
+    }
+    await api.post('/api/blogs').send(newBlog).expect(400)
+    const response = await api.get('/api/blogs')
+    assert.strictEqual(response.body.length, initialBlogs.length)
+})
+
 
 after(async () => {
     await mongoose.connection.close()
