@@ -97,7 +97,35 @@ test('blog wihtout title', async () => {
     assert.strictEqual(response.body.length, initialBlogs.length)
 })
 
+test('delete of a blog and succeed with 204 when id is valid', async () => {
+    const blogsAtStart = await api.get('/api/blogs') 
+    const blogToDelete = blogsAtStart.body[0]
 
+    await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
+
+    const blogsAtEnd = await api.get('/api/blogs') 
+    const titles = blogsAtEnd.body.map(blog => blog.title)
+
+    assert(!titles.includes(blogToDelete.title))
+    assert.strictEqual(blogsAtEnd.body.length, initialBlogs.length -1)
+})
+
+test('likes of a blog can be updated', async () => {
+    const blogsAtStart = await api.get('/api/blogs')
+    const blogToUpdate = blogsAtStart.body[0]
+
+    const updatedBlog = {
+        ...blogToUpdate,
+        likes: 888
+    }
+    const response = await api.put(`/api/blogs/${blogToUpdate.id}`).send(updatedBlog).expect(200).expect('Content-Type', /application\/json/)
+    assert.strictEqual(response.body.likes, 888)
+
+    const blogsAtEnd = await api.get('/api/blogs')
+    const changeBlog = blogsAtEnd.body.find(blog => blog.id === blogToUpdate.id)
+
+    assert.strictEqual(changeBlog.likes, 888)
+})
 after(async () => {
     await mongoose.connection.close()
 })
