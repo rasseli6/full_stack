@@ -119,10 +119,11 @@ test('blog wihtout title', async () => {
 })
 
 test('delete of a blog and succeed with 204 when id is valid', async () => {
+    const token = await loginAndGetToken()
     const blogsAtStart = await api.get('/api/blogs') 
     const blogToDelete = blogsAtStart.body[0]
 
-    await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
+    await api.delete(`/api/blogs/${blogToDelete.id}`).set('Authorization', `Bearer ${token}`).expect(204)
 
     const blogsAtEnd = await api.get('/api/blogs') 
     const titles = blogsAtEnd.body.map(blog => blog.title)
@@ -146,6 +147,49 @@ test('likes of a blog can be updated', async () => {
     const changeBlog = blogsAtEnd.body.find(blog => blog.id === blogToUpdate.id)
 
     assert.strictEqual(changeBlog.likes, 888)
+})
+test('adding a blog fails with status code 401 if token is not here', async () => {
+  const newBlog = {
+    title: 'No authentication blog',
+    author: 'Rasmus',
+    url: 'http://example.com',
+    likes: 1
+  }
+  const response = await api.post('/api/blogs').send(newBlog).expect(401).expect('Content-Type', /application\/json/)
+  assert(response.body.error.includes('token'))
+})
+test('deleting a blog fails with 401 if token is not provided', async () => {
+
+  const blogsAtStart = await api.get('/api/blogs')
+  const blogToDelete = blogsAtStart.body[0]
+  await api.delete(`/api/blogs/${blogToDelete.id}`).expect(401)
+  const blogsAtEnd = await api.get('/api/blogs')
+    assert.strictEqual(blogsAtEnd.body.length, initialBlogs.length)
+})
+
+test('deleting a blog fails with 403 if user is not the creator', async () => {
+
+  const passwordHash = await bcrypt.hash('toinensalasana', 10)
+  const anotherUser = new User({
+    username: 'toinenkayttaja',
+    name: 'Toinen Käyttäjä',
+    passwordHash
+  })
+  await anotherUser.save()
+  const loginResponse = await api.post('/api/login').send({
+    username: 'toinenkayttaja',
+    password: 'toinensalasana'
+    })
+
+  const token = loginResponse.body.token
+  const blogsAtStart = await api.get('/api/blogs')
+  const blogToDelete = blogsAtStart.body[0]
+  await api.delete(`/api/blogs/${blogToDelete.id}`).set('Authorization', `Bearer ${token}`).expect(403)
+
+  const blogsAtEnd = await api.get('/api/blogs')
+  assert.strictEqual(blogsAtEnd.body.length, initialBlogs.length)
+  const titles = blogsAtEnd.body.map(blog => blog.title)
+  assert(titles.includes(blogToDelete.title))
 })
 
 after(async () => {
