@@ -1,4 +1,6 @@
 const assert = require('node:assert')
+const bcrypt = require('bcrypt')
+const User = require('../models/users')
 const { test, after, beforeEach, describe } = require('node:test')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
@@ -6,7 +8,6 @@ const app = require('../app')
 const Blog = require('../models/blog')
 
 const api = supertest(app)
-
 
 const initialBlogs = [{
         "title": "Ihka ensimmäinen kokeilu",
@@ -27,11 +28,25 @@ const initialBlogs = [{
       likes: 5
     }
 ]
+const loginAndGetToken = async () => {
+  const response = await api.post('/api/login').send({username: 'kaksoisklikkaus', password: 'salainenTodella'})
+  return response.body.token
+}
 
 beforeEach(async () => {
     await Blog.deleteMany({})
+    await User.deleteMany({})
+    const passwordHash = await bcrypt.hash('salainenTodella', 10)
+    const user = new User({
+        username: 'kaksoisklikkaus',
+        name: 'Kaksois Klikkaus',
+        passwordHash
+    })
+    const savedUser = await user.save()
     for (const blog of initialBlogs) {
-        const blogObject = new Blog(blog)
+        const blogObject = new Blog({
+            ...blog, 
+            user: savedUser._id})
         await blogObject.save()
     }
 })
@@ -56,8 +71,10 @@ test('new blog posted', async() => {
         "author": "Rasmus",
         "url": "http://example.com",
         "likes": 38}
+
+    const token = await loginAndGetToken()
     
-    await api.post('/api/blogs').send(newBlog).expect(201).expect('Content-Type', /application\/json/)
+    await api.post('/api/blogs').set('Authorization', `Bearer ${token}`).send(newBlog).expect(201).expect('Content-Type', /application\/json/)
 
     const response = await api.get('/api/blogs')
 
@@ -72,7 +89,9 @@ test('likes missing, assume its 0', async () => {
         author: 'Rasse',
         url: 'http://example.com/no-love'
     }
-    const postResponse = await api.post('/api/blogs').send(newestBlog).expect(201).expect('Content-Type', /application\/json/)
+    const token = await loginAndGetToken()
+
+    const postResponse = await api.post('/api/blogs').set('Authorization', `Bearer ${token}`).send(newestBlog).expect(201).expect('Content-Type', /application\/json/)
     assert.strictEqual(postResponse.body.likes, 0)
 })
 test('url not added', async () => {
@@ -81,7 +100,8 @@ test('url not added', async () => {
         author: "Rasse",
         likes: 1
     }
-    await api.post('/api/blogs').send(newBlog).expect(400)
+    const token = await loginAndGetToken()
+    await api.post('/api/blogs').set('Authorization', `Bearer ${token}`).send(newBlog).expect(400)
     const urlresponse = await api.get('/api/blogs')
     assert.strictEqual(urlresponse.body.length, initialBlogs.length)
 })
@@ -92,7 +112,8 @@ test('blog wihtout title', async () => {
         author: "Rasse",
         likes: 3
     }
-    await api.post('/api/blogs').send(newBlog).expect(400)
+    const token = await loginAndGetToken()
+    await api.post('/api/blogs').set('Authorization', `Bearer ${token}`).send(newBlog).expect(400)
     const response = await api.get('/api/blogs')
     assert.strictEqual(response.body.length, initialBlogs.length)
 })
@@ -126,6 +147,7 @@ test('likes of a blog can be updated', async () => {
 
     assert.strictEqual(changeBlog.likes, 888)
 })
+
 after(async () => {
     await mongoose.connection.close()
 })
