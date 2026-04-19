@@ -12,11 +12,28 @@ const App = () => {
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
-  const [newTitle, setNewTitle] = useState('')
-  const [newAuthor, setNewAuthor] = useState('')
-  const [newUrl, setNewUrl] = useState('')
   const [blogFormVisible, setBlogFormVisible] = useState(false)
 
+  const removeBlog = async blog => {
+    const vahvistus = window.confirm('Are you sure you want to permanently delete this blog?')
+    if (!vahvistus) {
+      return
+      }
+      else {
+      await blogService.remove(blog.id)
+      setBlogs(blogs.filter(b => b.id !== blog.id))
+    }
+  }
+
+  const updateLikes = async blog => {
+    const updatedBlog = {
+      ...blog,
+      likes: blog.likes + 1,
+      user: blog.user.id
+    }
+    const returnedBlog = await blogService.update(blog.id, updatedBlog)
+    setBlogs(blogs.map(b => b.id !== blog.id ? b : {...returnedBlog, user: blog.user}))
+  }
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -84,25 +101,16 @@ const App = () => {
     </form>
   )
  
-  const addNewBlog = async event => {
-    event.preventDefault()
-    try {
-      const blogObject = {
-        title: newTitle,
-        author: newAuthor, 
-        url: newUrl
-      }
-      const returnedBlog = await blogService.create(blogObject)
+   const addNewBlog = async blogObject => {
+      try{
+        const returnedBlog = await blogService.create(blogObject)
         setBlogs(blogs.concat(returnedBlog))
-        setNewTitle('')
-        setNewAuthor('')
-        setNewUrl('')
         setErrorMessage(`a new blog ${returnedBlog.title} added!`)
         setBlogFormVisible(false)
         setTimeout(()=>{
           setErrorMessage(null)
         }, 5000)
-      }catch {
+      } catch {
         setErrorMessage('Something went wrong. Try again')
         setTimeout(() => {
           setErrorMessage(null)
@@ -111,7 +119,7 @@ const App = () => {
   }
   const hideWhenVisible = { display: blogFormVisible ? 'none' : '' }
   const showWhenVisible = { display: blogFormVisible ? '' : 'none' }
-
+  const sortedBlogs = [...blogs].sort((a,b) => b.likes - a.likes)
   return (
     <div>
       <Notification message={errorMessage}/>
@@ -129,21 +137,15 @@ const App = () => {
           
           <div style={showWhenVisible}>
             <NewBlogForm
-                addNewBlog={addNewBlog}
-                setNewTitle={setNewTitle}
-                setNewAuthor={setNewAuthor}
-                setNewUrl={setNewUrl}
-                newTitle={newTitle}
-                newAuthor={newAuthor}
-                newUrl={newUrl}
+            createBlog={addNewBlog}
               />
             <button type='button' onClick={() => setBlogFormVisible(false)}>
             cancel 
             </button>
           </div>
           
-          {blogs.map(blog => 
-            <Blog key={blog.id} blog={blog} />
+          {sortedBlogs.map(blog => 
+            <Blog key={blog.id} blog={blog} updateLikes={updateLikes} user = {user} removeBlog={removeBlog}/>
           )}
         </div>
     )}
