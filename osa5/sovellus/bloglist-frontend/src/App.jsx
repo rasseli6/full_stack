@@ -99,7 +99,7 @@ const App = () => {
   const addNewBlog = async blogObject => {
     try{
       const returnedBlog = await blogService.create(blogObject)
-      setBlogs(blogs.concat(returnedBlog))
+      setBlogs(blogs.concat({ ...returnedBlog, user: user }))
       setErrorMessage(`a new blog ${returnedBlog.title} added!`)
       setBlogFormVisible(false)
       setTimeout(() => { setErrorMessage(null)
