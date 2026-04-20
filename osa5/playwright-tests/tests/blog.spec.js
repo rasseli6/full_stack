@@ -96,5 +96,30 @@ describe('Blogilista', () => {
       await page.getByRole('button', { name: 'remove' }).click()
       await expect(page.getByText('Poistettava blogi Teemu')).not.toBeVisible()
     })
+    test('blogit järjestetään likejen mukaan', async ({ page }) => {
+    await page.getByRole('button', { name: 'create new blog' }).click()
+    await page.getByLabel('title:').fill('Vähän likejä')
+    await page.getByLabel('author:').fill('Teemu pommitestimies')
+    await page.getByLabel('url:').fill('vahan.fi')
+    await page.getByRole('button', { name: 'create' }).click()
+
+    await page.getByRole('button', { name: 'create new blog' }).click()
+    await page.getByLabel('title:').fill('Paljon likejä')
+    await page.getByLabel('author:').fill('Teemu pommitestimies')
+    await page.getByLabel('url:').fill('paljon.fi')
+    await page.getByRole('button', { name: 'create' }).click()
+
+    const viewButtons = page.getByRole('button', { name: 'view' })
+    await viewButtons.first().click()
+    await viewButtons.last().click()
+
+    const likeButtons = page.getByRole('button', { name: 'like' })
+    await likeButtons.last().click()
+    await likeButtons.last().click()
+    await likeButtons.last().click()
+
+    const blogs = page.locator('div').filter({ hasText: /likejä/ })
+    await expect(blogs.first()).toContainText('Paljon likejä')
+  })
   })
 })
