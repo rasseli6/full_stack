@@ -60,5 +60,3 @@ const NewBlogForm = ({ createBlog }) => {
 }
 
 export default NewBlogForm
-
- 

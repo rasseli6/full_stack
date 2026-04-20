@@ -13,11 +13,8 @@ const Blog = ({ blog, updateLikes, user, removeBlog }) => {
 
   if (visible === false) {
     return (
-      <div style={blogStyle}>
-      {blog.title} {blog.author}
-      <button onClick={() => setVisible(true)}>view</button>
-      </div> 
-  )
+      <div style={blogStyle}> {blog.title} {blog.author}<button onClick={() => setVisible(true)}>view</button>
+      </div> )
   }
 
   else {
