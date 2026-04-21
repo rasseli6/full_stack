@@ -4,6 +4,8 @@ import blogService from './services/blogs'
 import loginService from './services/login'
 import Notification from './components/Notifications'
 import NewBlogForm from './components/NewBlogForm'
+import { Link, Route, Routes, useNavigate, useMatch } from 'react-router-dom'
+import BlogView from './components/BlogView'
 
 
 const App = () => {
@@ -13,6 +15,10 @@ const App = () => {
   const [user, setUser] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
   const [blogFormVisible, setBlogFormVisible] = useState(false)
+
+  const navigate = useNavigate()
+  const match = useMatch('/blogs/:id')
+  const blog = match ? blogs.find(b => b.id === match.params.id) : null
 
   const removeBlog = async blog => {
     const vahvistus = window.confirm('Are you sure you want to permanently delete this blog?')
@@ -57,6 +63,7 @@ const App = () => {
       setUser(user)
       setUsername('')
       setPassword('')
+      navigate('/')
     } catch {
       setErrorMessage('wrong username or password')
       setTimeout(() => {
@@ -101,7 +108,7 @@ const App = () => {
       const returnedBlog = await blogService.create(blogObject)
       setBlogs(blogs.concat({ ...returnedBlog, user: user }))
       setErrorMessage(`a new blog ${returnedBlog.title} added!`)
-      setBlogFormVisible(false)
+      navigate('/')
       setTimeout(() => { setErrorMessage(null)
       }, 5000)
     } catch {
@@ -114,26 +121,48 @@ const App = () => {
   const hideWhenVisible = { display: blogFormVisible ? 'none' : '' }
   const showWhenVisible = { display: blogFormVisible ? '' : 'none' }
   const sortedBlogs = [...blogs].sort((a,b) => b.likes - a.likes)
+  const padding = { padding: 5 }
   return (
     <div>
-      <Notification message={errorMessage}/>
-      {!user && loginForm()}
-      {user && (
-        <div>
-          <h2>blogs</h2>
-          <p>
-            {user.name} logged in <button onClick={handleLogout}>logout</button>
-          </p>
-          <div style ={hideWhenVisible}>
-            <button onClick={() => setBlogFormVisible(true)}>create new blog</button> </div>
-          <div style={showWhenVisible}>
-            <NewBlogForm createBlog={addNewBlog}/>
-            <button type='button' onClick={() => setBlogFormVisible(false)}>
-            cancel </button>
-          </div>
-          {sortedBlogs.map(blog => <Blog key={blog.id} blog={blog} updateLikes={updateLikes} user = {user} removeBlog={removeBlog}/>
-          )}
-        </div>)}
-    </div>)}
+      <div>
+        <Link style={padding} to="/">blogs</Link>
+        {user
+          ? <><Link style={padding} to="/create">New Blog</Link><button onClick={handleLogout}>logout</button></>
+          : <Link style={padding} to="/login">login</Link>
+        }
+      </div>
 
+      <Notification message={errorMessage}/>
+
+      <Routes>
+        <Route path="/create" element={
+          <div>
+            <NewBlogForm createBlog={addNewBlog}/>
+          </div>
+        }/>
+        <Route path="/login" element={loginForm()} />
+        <Route path="/blogs/:id" element={<BlogView blog={blog} user={user} updateLikes={updateLikes} removeBlog={removeBlog} />} />
+        <Route path="/" element={
+          user && (
+            <div>
+              <h2>blogs</h2>
+              <p>{user.name} logged in</p>
+              <div style={hideWhenVisible}>
+                <button onClick={() => setBlogFormVisible(true)}>create new blog</button>
+              </div>
+              <div style={showWhenVisible}>
+                <NewBlogForm createBlog={addNewBlog}/>
+                <button type='button' onClick={() => setBlogFormVisible(false)}>cancel</button>
+              </div>
+              <ul>
+                {sortedBlogs.map(blog =>
+                  <li key={blog.id}>
+                    <Link to={`/blogs/${blog.id}`}>{blog.title} by {blog.author}</Link>
+                  </li>
+                )}
+              </ul>
+            </div>
+          )} />
+      </Routes>
+    </div>)}
 export default App
