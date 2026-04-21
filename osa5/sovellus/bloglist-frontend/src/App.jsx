@@ -6,6 +6,7 @@ import Notification from './components/Notifications'
 import NewBlogForm from './components/NewBlogForm'
 import { Link, Route, Routes, useNavigate, useMatch } from 'react-router-dom'
 import BlogView from './components/BlogView'
+import { AppBar, Toolbar, Typography, Button as MuiButton, Container, TextField, Button } from '@mui/material'
 
 
 const App = () => {
@@ -14,7 +15,6 @@ const App = () => {
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
-  const [blogFormVisible, setBlogFormVisible] = useState(false)
 
   const navigate = useNavigate()
   const match = useMatch('/blogs/:id')
@@ -78,30 +78,18 @@ const App = () => {
   }
 
   const loginForm = () => (
-    <form onSubmit={handleLogin}>
-      <div>
-        <h2>login</h2>
-        <label>
-          username
-          <input
-            type="text"
-            value={username}
-            onChange={({ target }) => setUsername(target.value)}
-          />
-        </label>
-      </div>
-      <div>
-        <label>
-          password
-          <input
-            type="password"
-            value={password}
-            onChange={({ target }) => setPassword(target.value)}
-          />
-        </label>
-      </div>
-      <button type="submit">login</button>
-    </form>
+    <div>
+      <h2>Log in to application</h2>
+      <form onSubmit={handleLogin}>
+        <div>
+          <TextField label="username" value={username} onChange={({ target }) => setUsername(target.value)} />
+        </div>
+        <div>
+          <TextField label="password" type="password" value={password} onChange={({ target }) => setPassword(target.value)} />
+        </div>
+        <Button type="submit" variant="contained" style={{ marginTop: 10 }}>login</Button>
+      </form>
+    </div>
   )
   const addNewBlog = async blogObject => {
     try{
@@ -118,19 +106,22 @@ const App = () => {
       }, 5000)
     }
   }
-  const hideWhenVisible = { display: blogFormVisible ? 'none' : '' }
-  const showWhenVisible = { display: blogFormVisible ? '' : 'none' }
+
   const sortedBlogs = [...blogs].sort((a,b) => b.likes - a.likes)
-  const padding = { padding: 5 }
+
   return (
     <div>
-      <div>
-        <Link style={padding} to="/">blogs</Link>
-        {user
-          ? <><Link style={padding} to="/create">New Blog</Link><button onClick={handleLogout}>logout</button></>
-          : <Link style={padding} to="/login">login</Link>
-        }
-      </div>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" style={{ flexGrow: 1 }}>Blog App</Typography>
+          <MuiButton color="inherit" component={Link} to="/">blogs</MuiButton>
+          {user && <MuiButton color="inherit" component={Link} to="/create">new blog</MuiButton>}
+          {user
+            ? <MuiButton color="inherit" onClick={handleLogout}>logout</MuiButton>
+            : <MuiButton color="inherit" component={Link} to="/login">login</MuiButton>
+          }
+        </Toolbar>
+      </AppBar>
 
       <Notification message={errorMessage}/>
 
@@ -146,14 +137,6 @@ const App = () => {
           user && (
             <div>
               <h2>blogs</h2>
-              <p>{user.name} logged in</p>
-              <div style={hideWhenVisible}>
-                <button onClick={() => setBlogFormVisible(true)}>create new blog</button>
-              </div>
-              <div style={showWhenVisible}>
-                <NewBlogForm createBlog={addNewBlog}/>
-                <button type='button' onClick={() => setBlogFormVisible(false)}>cancel</button>
-              </div>
               <ul>
                 {sortedBlogs.map(blog =>
                   <li key={blog.id}>
