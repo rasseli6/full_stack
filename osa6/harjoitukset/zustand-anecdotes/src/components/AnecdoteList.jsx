@@ -1,12 +1,17 @@
 import { useAnecdotes, useAnecdoteActions, useFilter } from '../store'
+import { useNotificationActions } from '../NotificationStore'
 
 const AnecdoteList = () => {
   const anecdotes = useAnecdotes()
-  const { voted } = useAnecdoteActions()
+  const { voted, remove } = useAnecdoteActions()
   const filter = useFilter()
+  const { setNotification } = useNotificationActions()
 
   const vote = id => {
+    const votedAnecdote = anecdotes.find(a => a.id === id)
     voted(id)
+    setNotification(`You voted '${votedAnecdote.content}'`)
+    
   }
 
   const AnecdotesToShow = anecdotes.filter ( anecdote => {
@@ -22,6 +27,8 @@ const AnecdoteList = () => {
           <div>
             has {anecdote.votes}
             <button onClick={() => vote(anecdote.id)}>vote</button>
+            {anecdote.votes === 0 &&
+            <button onClick={() => remove(anecdote.id)}>remove</button>}
           </div>
         </div>
         ))}
