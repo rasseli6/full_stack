@@ -19,9 +19,7 @@ class ErrorBoundary extends React.Component {
       return (
         <div>
           <h2>Something went wrong :( </h2>
-          <button onClick={() => this.setState({ hasError: false, error: null })}>
-            Try again
-          </button>
+          <button onClick={() => this.setState({ hasError: false, error: null })}>Try again</button>
           <p>Please make a bug ticket for Rasmus in WA</p>
         </div>
       )

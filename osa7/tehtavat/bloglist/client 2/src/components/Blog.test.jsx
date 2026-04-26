@@ -28,7 +28,12 @@ test('kirjautumaton käyttäjä näkee tiedot mutta ei nappeja kai', () => {
 test('kirjautunut käyttäjä joka ei ole itse luoja näkee vain like nappulan', () => {
   render(
     <MemoryRouter>
-      <BlogView blog={blog} user={{ username: 'jokuMuu' }} updateLikes={() => {}} removeBlog={() => {}} />
+      <BlogView
+        blog={blog}
+        user={{ username: 'jokuMuu' }}
+        updateLikes={() => {}}
+        removeBlog={() => {}}
+      />
     </MemoryRouter>
   )
   expect(screen.queryByText('like')).not.toBeNull()
@@ -38,7 +43,12 @@ test('kirjautunut käyttäjä joka ei ole itse luoja näkee vain like nappulan',
 test('blogin luoja näkee like ja remove napit', () => {
   render(
     <MemoryRouter>
-      <BlogView blog={blog} user={{ username: 'TestiRasse' }} updateLikes={() => {}} removeBlog={() => {}} />
+      <BlogView
+        blog={blog}
+        user={{ username: 'TestiRasse' }}
+        updateLikes={() => {}}
+        removeBlog={() => {}}
+      />
     </MemoryRouter>
   )
   expect(screen.queryByText('like')).not.toBeNull()
