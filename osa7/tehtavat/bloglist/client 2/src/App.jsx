@@ -7,6 +7,7 @@ import NewBlogForm from './components/NewBlogForm'
 import { Link, Route, Routes, useNavigate, useMatch } from 'react-router-dom'
 import BlogView from './components/BlogView'
 import { AppBar, Toolbar, Typography, Button as MuiButton, Container, TextField, Button } from '@mui/material'
+import ErrorBoundary from './components/ErrorBoundary'
 
 
 const App = () => {
@@ -77,20 +78,21 @@ const App = () => {
     setUser(null)
   }
 
-  const loginForm = () => (
-    <div>
-      <h2>Log in to application</h2>
-      <form onSubmit={handleLogin}>
-        <div>
-          <TextField label="username" value={username} onChange={({ target }) => setUsername(target.value)} />
-        </div>
-        <div>
-          <TextField label="password" type="password" value={password} onChange={({ target }) => setPassword(target.value)} />
-        </div>
-        <Button type="submit" variant="contained" style={{ marginTop: 10 }}>login</Button>
-      </form>
-    </div>
-  )
+  const loginForm = () => {
+    return (
+      <div>
+        <h2>Log in to application</h2>
+        <form onSubmit={handleLogin}>
+          <div>
+            <TextField label="username" value={username} onChange={({ target }) => setUsername(target.value)} />
+          </div>
+          <div>
+            <TextField label="password" type="password" value={password} onChange={({ target }) => setPassword(target.value)} />
+          </div>
+          <Button type="submit" variant="contained" style={{ marginTop: 10 }}>login</Button>
+        </form>
+      </div>)
+  }
   const addNewBlog = async blogObject => {
     try{
       const returnedBlog = await blogService.create(blogObject)
@@ -124,28 +126,29 @@ const App = () => {
       </AppBar>
 
       <Notification message={errorMessage}/>
-
-      <Routes>
-        <Route path="/create" element={
-          <div>
-            <NewBlogForm createBlog={addNewBlog}/>
-          </div>
-        }/>
-        <Route path="/login" element={loginForm()} />
-        <Route path="/blogs/:id" element={<BlogView blog={blog} user={user} updateLikes={updateLikes} removeBlog={removeBlog} />} />
-        <Route path="/" element={
-          user && (
+      <ErrorBoundary>
+        <Routes>
+          <Route path="/create" element={
             <div>
-              <h2>blogs</h2>
-              <ul>
-                {sortedBlogs.map(blog =>
-                  <li key={blog.id}>
-                    <Link to={`/blogs/${blog.id}`}>{blog.title} by {blog.author}</Link>
-                  </li>
-                )}
-              </ul>
+              <NewBlogForm createBlog={addNewBlog}/>
             </div>
-          )} />
-      </Routes>
+          }/>
+          <Route path="/login" element={loginForm()} />
+          <Route path="/blogs/:id" element={<BlogView blog={blog} user={user} updateLikes={updateLikes} removeBlog={removeBlog} />} />
+          <Route path="/" element={
+            user && (
+              <div>
+                <h2>blogs</h2>
+                <ul>
+                  {sortedBlogs.map(blog =>
+                    <li key={blog.id}>
+                      <Link to={`/blogs/${blog.id}`}>{blog.title} by {blog.author}</Link>
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )} />
+        </Routes>
+      </ErrorBoundary>
     </div>)}
 export default App
