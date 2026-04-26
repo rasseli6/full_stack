@@ -8,7 +8,7 @@ import { Link, Route, Routes, useNavigate, useMatch } from 'react-router-dom'
 import BlogView from './components/BlogView'
 import { AppBar, Toolbar, Typography, Button as MuiButton, Container, TextField, Button } from '@mui/material'
 import ErrorBoundary from './components/ErrorBoundary'
-
+import NotFound from './components/NotFound'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
@@ -148,6 +148,7 @@ const App = () => {
                 </ul>
               </div>
             )} />
+          <Route path="*" element={<NotFound />}/>
         </Routes>
       </ErrorBoundary>
     </div>)}
