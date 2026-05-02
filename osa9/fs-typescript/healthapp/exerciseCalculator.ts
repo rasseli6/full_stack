@@ -4,10 +4,10 @@ interface ExerciseValues {
 }
 const parseArguments = (args: string[]): ExerciseValues => {
     if (args.length < 4) {
-        throw new Error('Not enought arguments')
+        throw new Error('Not enought arguments');
     }
     const target = Number(args[2]);
-    const dailyHours = args.slice(3).map(hour => Number(hour))
+    const dailyHours = args.slice(3).map(hour => Number(hour));
     if (!isNaN(target) && dailyHours.every(hour => !isNaN(hour))) {
         return {
             target,
@@ -15,7 +15,7 @@ const parseArguments = (args: string[]): ExerciseValues => {
         };
     }
     throw new Error('Provided values were not numbers!');
-}
+};
 interface ExerciseResult {
     periodLength: number;
     trainingDays: number;
@@ -27,24 +27,24 @@ interface ExerciseResult {
 }
 
 const calculateExercises = (dailyHours: number[], target: number): ExerciseResult => {
-    const periodLength = dailyHours.length
-    const trainingDays = dailyHours.filter(hours => hours > 0).length
-    const totalHours = dailyHours.reduce((sum, hours) => sum + hours, 0)
-    const average = totalHours / periodLength
+    const periodLength = dailyHours.length;
+    const trainingDays = dailyHours.filter(hours => hours > 0).length;
+    const totalHours = dailyHours.reduce((sum, hours) => sum + hours, 0);
+    const average = totalHours / periodLength;
     const success = average >= target;
     let rating: number;
     let ratingDescription: string;
     if (average >= target){
-        rating = 3
-        ratingDescription = 'great job'
+        rating = 3;
+        ratingDescription = 'great job';
     }
     else if (average >= target * 0.75){
-        rating = 2
-        ratingDescription = 'not too bad but could be better'
+        rating = 2;
+        ratingDescription = 'not too bad but could be better';
     }
     else {
-        rating = 1 
-        ratingDescription = 'you need to work harder'
+        rating = 1; 
+        ratingDescription = 'you need to work harder';
     }
     return {
         periodLength,

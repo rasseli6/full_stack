@@ -24,10 +24,10 @@ app.get('/bmi', (req, res) => {
         height,
         bmi,
     });
-})
+});
 
 const PORT = 3003;
 
 app.listen(PORT, () => {
-    console.log(`Server running on por ${PORT}`)
+    console.log(`Server running on por ${PORT}`);
 });

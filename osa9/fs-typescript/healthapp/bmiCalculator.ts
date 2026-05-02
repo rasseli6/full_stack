@@ -19,19 +19,19 @@ const parseArguments = (args: string[]): BmiValues => {
             weight
         };
     }
-    throw new Error('Provided values were not numbers!')
-}
+    throw new Error('Provided values were not numbers!');
+};
 
 export const calculateBmi = (height: number, weight: number): string => {
-    const cmToM = height / 100
-    const bmi = weight / cmToM ** 2
+    const cmToM = height / 100;
+    const bmi = weight / cmToM ** 2;
     
     if (bmi < 18.5) {
         return 'Underweight';
     } else if (bmi <= 24.9) {
         return 'Normal range';
     } else {
-        return 'Overweight'
+        return 'Overweight';
     }
 };
 
