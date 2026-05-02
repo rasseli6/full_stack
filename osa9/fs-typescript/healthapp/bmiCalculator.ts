@@ -10,4 +10,4 @@ const calculateBmi = (height: number, weight: number): string => {
         return 'Overweight'
     }
 };
-console.log(calculateBmi(180, 74))
+console.log(calculateBmi(183, 89))
