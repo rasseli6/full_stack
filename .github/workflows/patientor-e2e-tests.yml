@@ -1,0 +1,93 @@
+name: Patientor E2E Tests
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - name: Install backend dependencies
+        working-directory: ./osa9/fs-typescript/patientor/backend
+        run: npm install --legacy-peer-deps
+
+      - name: Check backend types
+        working-directory: ./osa9/fs-typescript/patientor/backend
+        run: npm run tsc
+
+      - name: Lint backend
+        working-directory: ./osa9/fs-typescript/patientor/backend
+        run: npm run lint
+
+      - name: Install frontend dependencies
+        working-directory: ./osa9/fs-typescript/patientor/frontend
+        run: npm install
+
+      - name: Lint frontend
+        working-directory: ./osa9/fs-typescript/patientor/frontend
+        run: npm run lint
+
+      - name: Build frontend
+        working-directory: ./osa9/fs-typescript/patientor/frontend
+        run: npm run build
+
+      - name: Start backend
+        working-directory: ./osa9/fs-typescript/patientor/backend
+        run: |
+          npm start &
+          echo $! > backend.pid
+          sleep 5
+
+      - name: Start frontend
+        working-directory: ./osa9/fs-typescript/patientor/frontend
+        run: |
+          npm run dev -- --host 0.0.0.0 &
+          echo $! > frontend.pid
+          sleep 5
+
+      - name: Install test dependencies
+        working-directory: ./osa9/fs-typescript/patientor-tests
+        run: npm install
+
+      - name: Install Playwright browsers
+        working-directory: ./osa9/fs-typescript/patientor-tests
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        working-directory: ./osa9/fs-typescript/patientor-tests
+        run: npm test
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: patientor-e2e-playwright-report
+          path: osa9/fs-typescript/patientor-tests/playwright-report/
+          retention-days: 30
+
+      - name: Stop backend
+        if: always()
+        working-directory: ./osa9/fs-typescript/patientor/backend
+        run: |
+          if [ -f backend.pid ]; then
+            kill $(cat backend.pid) || true
+          fi
+
+      - name: Stop frontend
+        if: always()
+        working-directory: ./osa9/fs-typescript/patientor/frontend
+        run: |
+          if [ -f frontend.pid ]; then
+            kill $(cat frontend.pid) || true
+          fi
