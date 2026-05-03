@@ -16,13 +16,19 @@ const getNonSensitivePatients = (): NonSensitivePatient[] => {
 const addPatient = (entry: NewPatientEntry): Patient => {
     const newPatient = {
         id: uuid(),
-        ...entry
+        ...entry,
+        entries: [],
     };
     patients.push(newPatient);
     return newPatient;
 };
 
+const findById = (id: string): Patient | undefined => {
+  return patients.find((patient) => patient.id === id);
+};
+
 export default {
   getNonSensitivePatients,
-  addPatient
+  addPatient,
+  findById,
 };
