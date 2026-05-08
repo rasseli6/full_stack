@@ -6,6 +6,7 @@ import { useApolloClient, useQuery } from '@apollo/client/react'
 import Text from './Text'
 import { ME } from '../graphql/queries'
 import useAuthStorage from '../hooks/useAuthStorage'
+
 const styles = StyleSheet.create({
   container: {
     paddingTop: Constants.statusBarHeight,
@@ -20,7 +21,6 @@ const styles = StyleSheet.create({
     color: 'white',
   },
 })
-
 
 const AppBar = () => {
   const { data } = useQuery(ME, {
@@ -44,6 +44,22 @@ const AppBar = () => {
           </Text>
         </Link>
 
+        {data?.me && (
+          <Link to="/create-review" style={styles.tab}>
+            <Text fontWeight="bold" fontSize="subheading" style={styles.text}>
+              Create a review
+            </Text>
+          </Link>
+        )}
+
+        {data?.me && (
+          <Link to="/my-reviews" style={styles.tab}>
+            <Text fontWeight="bold" fontSize="subheading" style={styles.text}>
+              My reviews
+            </Text>
+          </Link>
+        )}
+
         {data?.me ? (
           <Pressable onPress={signOut} style={styles.tab}>
             <Text fontWeight="bold" fontSize="subheading" style={styles.text}>
@@ -51,11 +67,19 @@ const AppBar = () => {
             </Text>
           </Pressable>
         ) : (
-          <Link to="/signin" style={styles.tab}>
-            <Text fontWeight="bold" fontSize="subheading" style={styles.text}>
-              Sign in
-            </Text>
-          </Link>
+          <>
+            <Link to="/signin" style={styles.tab}>
+              <Text fontWeight="bold" fontSize="subheading" style={styles.text}>
+                Sign in
+              </Text>
+            </Link>
+
+            <Link to="/signup" style={styles.tab}>
+              <Text fontWeight="bold" fontSize="subheading" style={styles.text}>
+                Sign up
+              </Text>
+            </Link>
+          </>
         )}
       </ScrollView>
     </View>
